@@ -1,0 +1,17 @@
+[
+  {
+    "mission": "Kepler",
+    "rows": 8066,
+    "pr_auc_macro": 0.8248351185718162
+  },
+  {
+    "mission": "K2",
+    "rows": 3375,
+    "pr_auc_macro": 0.8474452554864572
+  },
+  {
+    "mission": "TESS",
+    "rows": 6547,
+    "pr_auc_macro": 0.7248712117258638
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "Kepler": {
+    "rows": 9456,
+    "class_counts": {
+      "False Positive": 4742,
+      "Confirmed": 2746,
+      "Candidate": 1968
+    }
+  },
+  "TESS": {
+    "rows": 7699,
+    "class_counts": {
+      "Candidate": 5139,
+      "Confirmed": 1266,
+      "False Positive": 1196
+    }
+  },
+  "K2": {
+    "rows": 3971,
+    "class_counts": {
+      "Confirmed": 2295,
+      "Candidate": 1363,
+      "False Positive": 291
+    }
+  },
+  "Unified": {
+    "rows": 20926,
+    "class_counts": {
+      "Candidate": 8470,
+      "False Positive": 6229,
+      "Confirmed": 6227
+    }
+  }
+}

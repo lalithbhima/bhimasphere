@@ -1,0 +1,256 @@
+{
+  "feature_cols": [
+    "period",
+    "dur_h",
+    "depth_ppm",
+    "ror",
+    "rade_Re",
+    "a_over_rs",
+    "impact",
+    "ecc",
+    "incl_deg",
+    "insol_S",
+    "eqt_K",
+    "teff_K",
+    "logg_cgs",
+    "feh_dex",
+    "rad_Rs",
+    "mass_Ms",
+    "ra_deg",
+    "dec_deg",
+    "pm_ra_masyr",
+    "pm_dec_masyr",
+    "dist_pc",
+    "mag_T",
+    "mag_Kepler",
+    "depth_from_ror_ppm",
+    "depth_consistency",
+    "dur_frac",
+    "depth_snr",
+    "dur_snr",
+    "pm_tot",
+    "ecc_flag",
+    "high_b",
+    "period_err_mean",
+    "period_rel_err",
+    "period_missing",
+    "t0_bjd_err_mean",
+    "t0_bjd_rel_err",
+    "t0_bjd_missing",
+    "dur_h_err_mean",
+    "dur_h_rel_err",
+    "dur_h_missing",
+    "depth_ppm_err_mean",
+    "depth_ppm_rel_err",
+    "depth_ppm_missing",
+    "ror_err_mean",
+    "ror_rel_err",
+    "ror_missing",
+    "a_over_rs_err_mean",
+    "a_over_rs_rel_err",
+    "a_over_rs_missing",
+    "rho_star_cgs",
+    "a_AU",
+    "a_over_rs_phys",
+    "a_over_rs_consistency",
+    "Rp_Re_from_ror",
+    "geom_transit_prob",
+    "Teq_phys_K",
+    "dur_model_h",
+    "dur_consistency",
+    "H_G",
+    "H_K",
+    "giant_flag",
+    "valley_flag",
+    "low_prob_flag",
+    "dur_outlier_flag"
+  ],
+  "medians": {
+    "period": 5.8266942539999995,
+    "dur_h": 3.148,
+    "depth_ppm": 860.6,
+    "ror": 0.0239,
+    "rade_Re": 3.9241460999999997,
+    "a_over_rs": 16.101,
+    "impact": 0.493,
+    "ecc": 0.0,
+    "incl_deg": 88.56,
+    "insol_S": 223.365,
+    "eqt_K": 983.0,
+    "teff_K": 5721.0,
+    "logg_cgs": 4.411,
+    "feh_dex": -0.08,
+    "rad_Rs": 1.028,
+    "mass_Ms": 0.959318,
+    "ra_deg": 286.63553,
+    "dec_deg": 39.298618,
+    "pm_ra_masyr": -2.072,
+    "pm_dec_masyr": -5.693,
+    "dist_pc": 322.309,
+    "mag_T": 11.9718,
+    "mag_Kepler": 13.996,
+    "depth_from_ror_ppm": 571.21,
+    "depth_consistency": 0.17618596601073344,
+    "dur_frac": 0.020921047984116738,
+    "depth_snr": 22.859315589353614,
+    "dur_snr": 15.6243654822335,
+    "pm_tot": 21.141704850839254,
+    "ecc_flag": 0.0,
+    "high_b": 0.0,
+    "period_err_mean": 3.92e-05,
+    "period_rel_err": 5.941957426450068e-06,
+    "period_missing": 0.0,
+    "t0_bjd_err_mean": 0.002549,
+    "t0_bjd_rel_err": 2.6239272162020677e-09,
+    "t0_bjd_missing": 0.0,
+    "dur_h_err_mean": 0.192,
+    "dur_h_rel_err": 0.06394389438943894,
+    "dur_h_missing": 0.0,
+    "depth_ppm_err_mean": 24.2,
+    "depth_ppm_rel_err": 0.04369459851517799,
+    "depth_ppm_missing": 0.0,
+    "ror_err_mean": 0.0014815000000000002,
+    "ror_rel_err": 0.07168458781362007,
+    "ror_missing": 0.0,
+    "a_over_rs_err_mean": 2.4050000000000002,
+    "a_over_rs_rel_err": 0.16379310344827588,
+    "a_over_rs_missing": 0.0,
+    "rho_star_cgs": 2.649010322565527,
+    "a_AU": 0.14382195919218882,
+    "a_over_rs_phys": 27.490117409442302,
+    "a_over_rs_consistency": 0.31526787489745917,
+    "Rp_Re_from_ror": 2.4415237152723277,
+    "geom_transit_prob": 0.03761672082323543,
+    "Teq_phys_K": 702.547499507357,
+    "dur_model_h": 0.14171195002946568,
+    "dur_consistency": 0.9599050194045152,
+    "H_G": 8.421598849051561,
+    "H_K": 10.202220624617198,
+    "giant_flag": 0.0,
+    "valley_flag": 0.0,
+    "low_prob_flag": 0.0,
+    "dur_outlier_flag": 0.0
+  },
+  "weights": {
+    "xgb": 0.3349277193504711,
+    "lgbm": 0.3340585611857251,
+    "cat": 0.3310137194638037
+  },
+  "target_map": {
+    "0": "False Positive",
+    "1": "Candidate",
+    "2": "Confirmed"
+  },
+  "params": {
+    "xgb": {
+      "n_estimators": 600,
+      "max_depth": 7,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "objective": "multi:softprob",
+      "num_class": 3,
+      "tree_method": "hist",
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0,
+      "random_state": 42
+    },
+    "lgbm": {
+      "n_estimators": 800,
+      "num_leaves": 63,
+      "max_depth": -1,
+      "learning_rate": 0.03,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "objective": "multiclass",
+      "class_weight": "balanced",
+      "reg_lambda": 1.0,
+      "random_state": 42
+    },
+    "cat": {
+      "loss_function": "MultiClass",
+      "iterations": 1200,
+      "depth": 8,
+      "learning_rate": 0.03,
+      "l2_leaf_reg": 3.0,
+      "random_seed": 42,
+      "allow_writing_files": false,
+      "verbose": false
+    }
+  },
+  "cv": {
+    "n_splits": 5,
+    "stratified_group_cv": true
+  },
+  "base_report": {
+    "xgb": {
+      "label": "XGBoost",
+      "oof_pr_auc_macro": 0.8762324181930042,
+      "oof_pr_auc_per_class": {
+        "False Positive": 0.8912247697024169,
+        "Candidate": 0.8387836303564542,
+        "Confirmed": 0.8986888545201419
+      },
+      "oof_roc_auc_ovo": 0.9305919779885597,
+      "cv_pr_auc_macro_mean": 0.876525850048879,
+      "cv_pr_auc_macro_std": 0.006327629466217174
+    },
+    "lgbm": {
+      "label": "LightGBM",
+      "oof_pr_auc_macro": 0.8750947409445017,
+      "oof_pr_auc_per_class": {
+        "False Positive": 0.8900635550470591,
+        "Candidate": 0.8364977450784941,
+        "Confirmed": 0.8987229227079521
+      },
+      "oof_roc_auc_ovo": 0.9300919461988877,
+      "cv_pr_auc_macro_mean": 0.875461334462887,
+      "cv_pr_auc_macro_std": 0.007201012520265553
+    },
+    "cat": {
+      "label": "CatBoost",
+      "oof_pr_auc_macro": 0.8710975010891472,
+      "oof_pr_auc_per_class": {
+        "False Positive": 0.8869916870260448,
+        "Candidate": 0.8368065325856943,
+        "Confirmed": 0.8894942836557026
+      },
+      "oof_roc_auc_ovo": 0.9278983626570604,
+      "cv_pr_auc_macro_mean": 0.8714558160202717,
+      "cv_pr_auc_macro_std": 0.005708433138605787
+    }
+  },
+  "ensemble_oof": {
+    "pr_auc_macro_weighted": 0.877547153652829,
+    "pr_auc_macro_calibrated": 0.87706003047755
+  },
+  "mission_reports": {
+    "Kepler": {
+      "rows": 9456,
+      "oof_pr_auc_macro": 0.826829910981168,
+      "per_class": {
+        "False Positive": 0.9376091081190608,
+        "Candidate": 0.6159146764082015,
+        "Confirmed": 0.9269659484162416
+      }
+    },
+    "K2": {
+      "rows": 3869,
+      "oof_pr_auc_macro": 0.861410976702091,
+      "per_class": {
+        "False Positive": 0.8312950107952886,
+        "Candidate": 0.814114395757673,
+        "Confirmed": 0.9388235235533118
+      }
+    },
+    "TESS": {
+      "rows": 7601,
+      "oof_pr_auc_macro": 0.732266793251012,
+      "per_class": {
+        "False Positive": 0.6060688921890245,
+        "Candidate": 0.8958447347174249,
+        "Confirmed": 0.6948867528465863
+      }
+    }
+  }
+}

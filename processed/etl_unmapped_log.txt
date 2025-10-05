@@ -1,0 +1,2 @@
+Dropped 120 rows with unmapped labels.
+Removed 80 duplicate rows on keys ['star_id', 'period', 't0_bjd'].

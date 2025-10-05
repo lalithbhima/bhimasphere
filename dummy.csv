@@ -1,0 +1,2 @@
+mission,star_id,label,period,dur_h,depth_ppm,ror,a_over_rs,impact,ecc,incl_deg,rade_Re,teff_K,logg_cgs,feh_dex,rad_Rs,mass_Ms,age_Gyr,dist_pc,ra_deg,dec_deg
+Kepler,TEST001,Candidate,3.50,2.4,900,0.12,8.0,0.35,0.02,87.9,2.0,5700,4.40,0.02,1.00,1.00,4.0,120,290.1,42.5

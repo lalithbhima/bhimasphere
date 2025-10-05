@@ -1,0 +1,37 @@
+{
+  "ingest": null,
+  "current_release": {
+    "release": "v20251005-054929-UTC",
+    "notes": "Triggered from Researcher UI",
+    "scores": {
+      "oof": {
+        "weighted_pr_auc_macro": 0.8715303974253814,
+        "stack_meta_pr_auc_macro": 0.8708761380658353,
+        "calibrated_pr_auc_macro": 0.8713246984970099
+      },
+      "holdout": {
+        "pr_auc_macro": 0.8149290414432319,
+        "roc_auc_ovo": 0.9000419987703326
+      },
+      "ece": null,
+      "per_mission": {}
+    },
+    "thresholds": {
+      "0": 0.4424329813011476,
+      "1": 0.36245525011993723,
+      "2": 0.4231153445790166
+    },
+    "conformal_q": {
+      "0": 0.8326915104724714,
+      "1": 0.7881098874918303,
+      "2": 0.7307485381454311
+    },
+    "paths": {
+      "models": "/Users/lalithbhima/NASA/registry/v20251005-054929-UTC/models",
+      "reports": "/Users/lalithbhima/NASA/registry/v20251005-054929-UTC/reports"
+    }
+  },
+  "previous_release": null,
+  "deltas_vs_previous": {},
+  "shap_shift": {}
+}

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>NASA • A World Away • Step 6 Web Interface</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { --bg:#0a1020; --panel:#0f172a; --muted:#94a3b8; --text:#e2e8f0; --accent:#22d3ee; }
+  html,body { height:100%; margin:0; background:var(--bg); color:var(--text); font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif }
+  canvas { display:block }
+  .hud { position:fixed; inset:0; pointer-events:none }
+  .hud > * { pointer-events:auto }
+  .left { position:fixed; left:12px; top:12px; bottom:12px; width:320px; display:flex; flex-direction:column; gap:12px }
+  .right{ position:fixed; right:12px; top:12px; bottom:12px; width:360px; display:flex; flex-direction:column; gap:12px }
+  .top  { position:fixed; left:50%; transform:translateX(-50%); top:12px; display:flex; gap:12px }
+  .card { background:rgba(2,6,23,.85); border:1px solid rgba(226,232,240,.08); border-radius:14px; padding:12px; backdrop-filter: blur(6px); box-shadow:0 10px 30px rgba(0,0,0,.25) }
+  .card h2 { margin:0 0 8px 0; font-size:14px; letter-spacing:.3px }
+  .row { display:flex; align-items:center; gap:8px; margin:6px 0 }
+  .col { display:flex; flex-direction:column; gap:6px }
+  .input, select, button { background:#0b1220; color:var(--text); border:1px solid #22324d; border-radius:10px; padding:8px 10px }
+  button { cursor:pointer }
+  .pill { background:rgba(2,6,23,.85); border:1px solid rgba(226,232,240,.08); border-radius:999px; padding:8px 12px; font-size:13px }
+  .legend { display:grid; grid-template-columns:auto 1fr; gap:6px 8px; font-size:12px; color:var(--muted) }
+  .sw { width:10px; height:10px; border-radius:3px; border:1px solid rgba(255,255,255,.35) }
+  .footer { position:fixed; left:50%; transform:translateX(-50%); bottom:8px; opacity:.7; font-size:11px; }
+  .small { font-size:12px; color:var(--muted); }
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:8px }
+  .chartWrap { height:180px }
+  .badge { font-size:11px; background:#0b1220; border:1px solid #22324d; border-radius:999px; padding:3px 7px; color:#cbd5e1 }
+</style>
+</head>
+<body>
+  <!-- Three.js + OrbitControls (non-module so it “just works”) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- CSV + Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="top">
+      <div class="pill" id="countPill">Loading…</div>
+      <div class="pill"><span class="badge" id="modeBadge">Novice Mode</span></div>
+    </div>
+
+    <div class="left">
+      <div class="card">
+        <h2>Data & Modes</h2>
+        <div class="col">
+          <div class="row">
+            <input class="input" type="file" id="csvFile" accept=".csv" />
+            <button id="loadBtn">Load CSV</button>
+          </div>
+          <div class="small">Expected columns (any subset ok): <br><b>mission</b> (Kepler|K2|TESS), <b>label</b> (Confirmed|Candidate|False Positive), <b>ra</b>, <b>dec</b>, <b>period_days</b>, <b>radius_re</b>, <b>depth_ppm</b>, <b>p_exoplanet</b></div>
+          <div class="row">
+            <select id="modeSel">
+              <option>Novice</option>
+              <option>Researcher</option>
+            </select>
+            <button id="resetBtn">Reset View</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Filters</h2>
+        <div class="col">
+          <div class="grid2">
+            <select id="missionSel">
+              <option value="all">All Missions</option>
+              <option>Kepler</option><option>K2</option><option>TESS</option>
+            </select>
+            <select id="labelSel">
+              <option value="all">All Labels</option>
+              <option>Confirmed</option><option>Candidate</option><option>False Positive</option>
+            </select>
+          </div>
+          <div class="row">
+            <label class="small" style="width:120px">Period ≤ (days)</label>
+            <input class="input" id="periodMax" type="number" placeholder="(none)" style="width:120px" />
+          </div>
+          <div class="row">
+            <label class="small" style="width:120px">Radius ≥ (R⊕)</label>
+            <input class="input" id="radiusMin" type="number" placeholder="(none)" style="width:120px" />
+          </div>
+          <button id="applyFilters">Apply Filters</button>
+          <div class="small" id="filterInfo">No filters applied.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Threshold Lab</h2>
+        <div class="col">
+          <div class="row">
+            <input id="thresh" type="range" min="0" max="1" step="0.01" value="0.5" style="width:100%" />
+            <span id="threshVal" class="badge">0.50</span>
+          </div>
+          <div class="grid2">
+            <div><span class="small">Cutoff: if <b>p_exoplanet ≥ τ</b> → Positive</span></div>
+            <div style="text-align:right"><button id="autoCal">Auto-Calibrate</button></div>
+          </div>
+          <div class="grid2" style="margin-top:8px">
+            <div>
+              <div class="small">Confusion Matrix</div>
+              <canvas id="cmChart" class="chartWrap"></canvas>
+            </div>
+            <div>
+              <div class="small">Calibration</div>
+              <canvas id="calChart" class="chartWrap"></canvas>
+            </div>
+          </div>
+          <div class="grid2" style="margin-top:8px">
+            <div>
+              <div class="small">Speed vs Score</div>
+              <canvas id="speedChart" class="chartWrap"></canvas>
+            </div>
+            <div>
+              <div class="small">Ensemble</div>
+              <div class="row">
+                <label><input type="checkbox" id="ensembleChk" /> Use Ensemble</label>
+                <span class="small"> (avg of p1,p2,p3 if present)</span>
+              </div>
+              <button id="blsBtn">Run BLS Benchmark</button>
+              <div id="blsOut" class="small">BLS: ready.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <h2>Exoplanet Details</h2>
+        <div id="detailBox" class="small">Hover or click a planet to see details.</div>
+      </div>
+      <div class="card">
+        <h2>Legend</h2>
+        <div class="legend">
+          <div class="sw" style="background:#ffffff"></div><div>White spheres = exoplanet dots (size fixed)</div>
+          <div class="sw" style="background:#67e8f9"></div><div>Starfield points (background)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">NASA Space Apps • Step 6 demo: 3D Universe + Labs. Replace <code>p_exoplanet</code> with your model outputs to go from demo → production.</div>
+  </div>
+
+<script>
+/* ---------------------------  THREE.JS SCENE  --------------------------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b1120);
+
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+camera.position.set(0,0,900);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.target.set(0,0,0);
+controls.minDistance = 60;
+controls.maxDistance = 3000;
+controls.update();
+
+// Lights
+scene.add(new THREE.HemisphereLight(0xffffff, 0x223344, 0.9));
+const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+dir.position.set(6,10,8);
+scene.add(dir);
+
+// Starfield
+function addStars(count=6000, radius=2400){
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(count*3);
+  for(let i=0;i<count;i++){
+    const r=radius*Math.cbrt(Math.random());
+    const t=Math.random()*Math.PI*2;
+    const p=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(p)*Math.cos(t);
+    pos[i*3+1]=r*Math.sin(p)*Math.sin(t);
+    pos[i*3+2]=r*Math.cos(p);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const mat=new THREE.PointsMaterial({ size:1, color:0x67e8f9, opacity:0.55, transparent:true });
+  scene.add(new THREE.Points(geo, mat));
+}
+addStars();
+
+/* ----------------------------  DATA MODEL  ----------------------------- */
+let rawRows = [];           // all loaded or mock rows
+let filtered = [];          // subset after filters
+let cloudMesh = null;       // InstancedMesh of planets
+let selection = null;       // selected point metadata
+let mode = 'Novice';
+const COUNT_DEFAULT = 1500;
+const CLOUD_RADIUS = 700;
+
+// Minimal schema mapper (Kepler/K2/TESS CSVs often differ a bit)
+function normalizeRow(r, i){
+  // Try various column names → unified fields
+  const mission = r.mission || r.MISSION || r.msn || r.koi_mission || r.sector_mission || guessMission(r) || 'Kepler';
+  const label   = r.label || r.disposition || r.pdisposition || r.koi_pdisposition || r.koi_disposition || r.tce_disposition || 'Candidate';
+  const ra      = + (r.ra || r.RA || r.koi_ra || r.ra_deg || r.RAJ2000 || r.RA_deg || 360*Math.random());
+  const dec     = + (r.dec || r.DEC || r.koi_dec || r.dec_deg || r.DEJ2000 || r.Dec_deg || (Math.random()*180-90));
+  const period  = + (r.period_days || r.koi_period || r.per || r.P || r.tce_period || (0.5 + Math.random()*700));
+  const radius  = + (r.radius_re || r.koi_prad || r.prad || r.Rp_Rearth || (0.5 + Math.random()*10));
+  const depth   = + (r.depth_ppm || r.koi_depth || r.depth || (50 + Math.random()*5000));
+  // Probabilities: p_exoplanet or ensembles (p1..p3). If missing, synthesize from label.
+  let p = +(r.p_exoplanet ?? NaN);
+  const p1 = +(r.p1 ?? NaN), p2 = +(r.p2 ?? NaN), p3 = +(r.p3 ?? NaN);
+  if (Number.isNaN(p)) {
+    const base = (label && String(label).toLowerCase().includes('confirm')) ? 0.85
+               : (label && String(label).toLowerCase().includes('candidate')) ? 0.55
+               : 0.15;
+    p = Math.min(0.99, Math.max(0.01, base + (Math.random()-0.5)*0.2));
+  }
+  return { id:i, mission, label, ra, dec, period_days:period, radius_re:radius, depth_ppm:depth, p_exoplanet:p, p1, p2, p3 };
+}
+function guessMission(r){
+  const s=(r.source||r.catalog||'').toString().toLowerCase();
+  if(s.includes('tess')) return 'TESS';
+  if(s.includes('k2'))   return 'K2';
+  return 'Kepler';
+}
+
+// RA/Dec → 3D on unit sphere (use depth jitter)
+function raDecToVec3(raDeg, decDeg, jitter=1){
+  const ra = (raDeg||0) * Math.PI/180;
+  const dec = (decDeg||0) * Math.PI/180;
+  const x = Math.cos(dec)*Math.cos(ra);
+  const y = Math.cos(dec)*Math.sin(ra);
+  const z = Math.sin(dec);
+  // small offset so points aren’t co-planar
+  const r = CLOUD_RADIUS * (0.7 + 0.3*Math.random()) * jitter;
+  return new THREE.Vector3(x*r, y*r, z*r);
+}
+
+/* ------------------------  POINT CLOUD RENDER  ------------------------- */
+function rebuildCloud(rows){
+  // remove old
+  if (cloudMesh) {
+    cloudMesh.geometry.dispose();
+    cloudMesh.material.dispose();
+    scene.remove(cloudMesh);
+    cloudMesh = null;
+  }
+  const N = rows.length;
+  if (!N) { document.getElementById('countPill').textContent = '0 exoplanets'; renderer.render(scene,camera); return; }
+
+  const geo = new THREE.SphereGeometry(3, 16, 16);
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness:0.35, metalness:0.0 });
+  cloudMesh = new THREE.InstancedMesh(geo, mat, N);
+  const tmpM = new THREE.Matrix4();
+  const tmpQ = new THREE.Quaternion();
+  const tmpS = new THREE.Vector3(1,1,1);
+
+  for (let i=0; i<N; i++){
+    const r = rows[i];
+    const pos = raDecToVec3(r.ra, r.dec, 1);
+    tmpM.compose(pos, tmpQ, tmpS);
+    cloudMesh.setMatrixAt(i, tmpM);
+  }
+  cloudMesh.instanceMatrix.needsUpdate = true;
+  cloudMesh.userData.rows = rows;
+  scene.add(cloudMesh);
+
+  document.getElementById('countPill').textContent = `${N.toLocaleString()} exoplanets`;
+}
+
+/* ------------------------------  MOCK  -------------------------------- */
+function makeMock(n=COUNT_DEFAULT){
+  const missions = ['Kepler','K2','TESS'];
+  const labels   = ['Confirmed','Candidate','False Positive'];
+  const rows = [];
+  for (let i=0;i<n;i++){
+    const mission = missions[Math.floor(Math.random()*missions.length)];
+    const label   = labels[Math.floor(Math.random()*labels.length)];
+    const ra = Math.random()*360, dec = Math.random()*180-90;
+    const period = 0.5 + Math.random()*700;
+    const radius = 0.5 + Math.random()*12;
+    const depth  = 50 + Math.random()*6000;
+    const baseP  = label==='Confirmed'?0.9 : label==='Candidate'?0.55 : 0.1;
+    const p = Math.min(0.99, Math.max(0.01, baseP + (Math.random()-0.5)*0.2));
+    rows.push(normalizeRow({mission,label,ra,dec,period_days:period,radius_re:radius,depth_ppm:depth,p_exoplanet:p}, i));
+  }
+  return rows;
+}
+
+/* ----------------------------  FILTERING  ------------------------------ */
+function applyFiltersNow(){
+  const m = document.getElementById('missionSel').value;
+  const l = document.getElementById('labelSel').value;
+  const pmax = parseFloat(document.getElementById('periodMax').value);
+  const rmin = parseFloat(document.getElementById('radiusMin').value);
+
+  filtered = rawRows.filter(r=>{
+    if (m!=='all' && r.mission!==m) return false;
+    if (l!=='all' && r.label!==l)   return false;
+    if (!Number.isNaN(pmax) && r.period_days>pmax) return false;
+    if (!Number.isNaN(rmin) && r.radius_re<rmin)   return false;
+    return true;
+  });
+  document.getElementById('filterInfo').textContent =
+    `Filtered ${filtered.length.toLocaleString()} / ${rawRows.length.toLocaleString()}`;
+  rebuildCloud(filtered);
+  updateAllMetrics();  // refresh labs
+}
+
+/* ------------------------  HOVER / SELECTION  -------------------------- */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onMove(e){
+  mouse.x = (e.clientX/innerWidth)*2-1;
+  mouse.y = -(e.clientY/innerHeight)*2+1;
+}
+window.addEventListener('mousemove', onMove);
+window.addEventListener('click', pick);
+function pick(){
+  if (!cloudMesh) return;
+  raycaster.setFromCamera(mouse, camera);
+  const hit = raycaster.intersectObject(cloudMesh, false)[0];
+  if (!hit) return;
+  const idx = hit.instanceId;
+  const r = cloudMesh.userData.rows[idx];
+  selection = r;
+  document.getElementById('detailBox').innerHTML =
+    `<div><b>${r.mission}</b> • <b>${r.label}</b></div>
+     <div>RA ${r.ra.toFixed(3)}°, Dec ${r.dec.toFixed(3)}°</div>
+     <div>Period ≈ ${r.period_days.toFixed(2)} d • Radius ≈ ${r.radius_re.toFixed(2)} R⊕ • Depth ≈ ${Math.round(r.depth_ppm)} ppm</div>
+     <div>p(exoplanet) = <b>${r.p_exoplanet.toFixed(3)}</b>${ensembleChk.checked? ' (ensemble)': ''}</div>`;
+}
+
+/* ----------------------------  LABS / METRICS -------------------------- */
+let cmChart, calChart, speedChart;
+function ensureCharts(){
+  const mk = (ctx, cfg)=> new Chart(ctx, cfg);
+  if (!cmChart){
+    cmChart = mk(document.getElementById('cmChart'), {
+      type:'bar',
+      data:{ labels:['TP','FP','FN','TN'], datasets:[{label:'counts', data:[0,0,0,0]}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+    });
+  }
+  if (!calChart){
+    calChart = mk(document.getElementById('calChart'), {
+      type:'line',
+      data:{ labels:[], datasets:[{label:'empirical', data:[], tension:0.2}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{min:0,max:1}} }
+    });
+  }
+  if (!speedChart){
+    speedChart = mk(document.getElementById('speedChart'), {
+      type:'line',
+      data:{ labels:[], datasets:[{label:'score', data:[], tension:0.2}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{min:0,max:1}} }
+    });
+  }
+}
+function computeCM(rows, tau){
+  // Treat Confirmed as positive, False Positive as negative, Candidate based on prob
+  let TP=0,FP=0,FN=0,TN=0;
+  rows.forEach(r=>{
+    const y = /confirmed/i.test(r.label) ? 1 : /false/i.test(r.label) ? 0 : (r.p_exoplanet>=0.5?1:0);
+    const yhat = (r.p_exoplanet >= tau) ? 1 : 0;
+    if (y===1 && yhat===1) TP++;
+    else if (y===0 && yhat===1) FP++;
+    else if (y===1 && yhat===0) FN++;
+    else TN++;
+  });
+  return {TP,FP,FN,TN};
+}
+function updateAllMetrics(){
+  ensureCharts();
+  const tau = parseFloat(thresh.value);
+  const rows = filtered.length? filtered : rawRows;
+
+  // Ensemble if requested
+  if (ensembleChk.checked){
+    rows.forEach(r=>{
+      const arr = [r.p1, r.p2, r.p3].filter(v=>!Number.isNaN(v));
+      if (arr.length) r.p_exoplanet = arr.reduce((a,b)=>a+b,0)/arr.length;
+    });
+  }
+
+  const {TP,FP,FN,TN} = computeCM(rows, tau);
+  cmChart.data.datasets[0].data = [TP,FP,FN,TN];
+  cmChart.update();
+
+  // Calibration: bin by predicted prob
+  const bins = 10, counts = Array(bins).fill(0), pos = Array(bins).fill(0);
+  rows.forEach(r=>{
+    const b = Math.max(0, Math.min(bins-1, Math.floor(r.p_exoplanet*bins)));
+    counts[b]++; pos[b] += (/confirmed/i.test(r.label)?1:/false/i.test(r.label)?0:(r.p_exoplanet>=0.5?1:0));
+  });
+  const xs=[], ys=[];
+  for (let i=0;i<bins;i++){
+    xs.push(((i+0.5)/bins).toFixed(2));
+    ys.push(counts[i]? (pos[i]/counts[i]) : null);
+  }
+  calChart.data.labels = xs; calChart.data.datasets[0].data = ys; calChart.update();
+
+  // Speed vs Score: demo curve ~ (#points vs 1/(latency))
+  const sizes = [200,400,800,1200,1600,2000];
+  const svsX = sizes.map(s=>s.toString());
+  const svsY = sizes.map(s=> Math.max(0.2, 1 - Math.log10(1+s/500)/3)); // dummy “score”
+  speedChart.data.labels = svsX; speedChart.data.datasets[0].data = svsY; speedChart.update();
+}
+
+/* -------------------------------  UI  ---------------------------------- */
+const modeSel = document.getElementById('modeSel');
+const modeBadge = document.getElementById('modeBadge');
+modeSel.addEventListener('change', ()=>{
+  mode = modeSel.value;
+  modeBadge.textContent = `${mode} Mode`;
+});
+
+document.getElementById('applyFilters').addEventListener('click', applyFiltersNow);
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  controls.target.set(0,0,0); camera.position.set(0,0,900); controls.update();
+});
+
+const thresh = document.getElementById('thresh');
+const threshVal = document.getElementById('threshVal');
+thresh.addEventListener('input', ()=>{ threshVal.textContent = (+thresh.value).toFixed(2); updateAllMetrics(); });
+
+document.getElementById('autoCal').addEventListener('click', ()=>{
+  // Pick τ that maximizes (TP - FP) on current set (simple Youden J-like)
+  const rows = filtered.length? filtered : rawRows;
+  let bestT=0.5, best=-1;
+  for (let t=0;t<=100;t++){
+    const tau=t/100; const {TP,FP,FN,TN}=computeCM(rows,tau);
+    const youden = (TP/(TP+FN||1)) + (TN/(TN+FP||1)) - 1;
+    if (youden > best){ best=youden; bestT=tau; }
+  }
+  thresh.value = bestT.toFixed(2); threshVal.textContent = bestT.toFixed(2);
+  updateAllMetrics();
+});
+
+const ensembleChk = document.getElementById('ensembleChk');
+ensembleChk.addEventListener('change', updateAllMetrics);
+
+document.getElementById('blsBtn').addEventListener('click', ()=>{
+  // Frontend stub — replace with your WASM/worker call to run BLS on a selected light curve
+  document.getElementById('blsOut').textContent = selection ?
+    `BLS: peak period ≈ ${(selection.period_days* (0.9+0.2*Math.random())).toFixed(2)} d (demo)` :
+    `BLS: select a planet first.`;
+});
+
+/* ------------------------------  CSV I/O  ------------------------------ */
+document.getElementById('loadBtn').addEventListener('click', ()=>{
+  const file = document.getElementById('csvFile').files?.[0];
+  if (!file){ alert('Select a CSV first.'); return; }
+  Papa.parse(file, {
+    header:true, dynamicTyping:true, skipEmptyLines:true,
+    complete: (res)=>{
+      const rows = res.data.map((r,i)=>normalizeRow(r,i));
+      rawRows = rows; filtered = rows.slice();
+      rebuildCloud(filtered); updateAllMetrics();
+    },
+    error: (err)=> alert('CSV parse error: '+err.message)
+  });
+});
+
+/* ------------------------------  STARTUP ------------------------------- */
+rawRows = makeMock(COUNT_DEFAULT);
+filtered = rawRows.slice();
+rebuildCloud(filtered);
+ensureCharts();
+updateAllMetrics();
+
+/* ------------------------------  LOOP --------------------------------- */
+function animate(){
+  requestAnimationFrame(animate);
+  if (cloudMesh) cloudMesh.rotation.y += 0.0006; // subtle drift
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

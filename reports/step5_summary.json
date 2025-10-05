@@ -1,0 +1,32 @@
+{
+  "rows_evaluated": 20926,
+  "gate_thresholds": {
+    "Confirmed": 0.9,
+    "Candidate": 0.95
+  },
+  "ranking_weights": {
+    "p_conf": 1.0,
+    "p_cand": 0.4,
+    "p_fp": -0.6,
+    "depth_snr": 0.15,
+    "geom_transit_prob": 0.1,
+    "dur_consistency_penalty": -0.1
+  },
+  "explanations_path": "/Users/lalithbhima/NASA/reports/step5_explanations.jsonl",
+  "candidates_path": "/Users/lalithbhima/NASA/reports/step5_candidates.csv",
+  "shap_backend": "lgbm",
+  "best_thresholds": {
+    "0": 0.4424329813011476,
+    "1": 0.36245525011993723,
+    "2": 0.4231153445790166
+  },
+  "weights_used": {
+    "p_conf": 1.0,
+    "p_cand": 0.4,
+    "p_fp": -0.6,
+    "depth_snr": 0.15,
+    "geom_transit_prob": 0.1,
+    "dur_consistency_penalty": -0.1
+  },
+  "discovery_formula": "score = 1.0*p_conf + 0.4*p_cand - 0.6*p_fp + 0.15*depth_snr + 0.10*geom_transit_prob - 0.10*(1 - 1/(1+|dur_consistency|))"
+}
