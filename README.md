@@ -177,7 +177,7 @@ NASA/
 ##  Demo & Presentation
 
 -  **Demo Video:** [Watch on YouTube](https://youtu.be/a8_UtA3NojI)  
--  **Presentation Slides:** [*Add Google Slides or PDF link*]
+-  **Presentation Slides:** [View PDF on GitHub](https://github.com/lalithbhima/bhimasphere/blob/main/docs/BhimaSphere_presentation.pdf)
 
 ---
 
