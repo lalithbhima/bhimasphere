@@ -150,5 +150,59 @@ npm run dev
 ```
 Then open http://localhost:5173/universe
 
+---
+
+## 🧩 Folder Structure
+
+```bash
+NASA/
+├── models/               # Trained ensemble + neural weights
+├── nasa-exo-ui/          # Frontend (React + Three.js)
+│   ├── components/
+│   ├── pages/
+│   └── data/
+│       ├── kepler_objects_of_interest.json
+│       ├── k2_planets_and_candidates.json
+│       └── TESS_objects_of_interest.json
+├── step1.py              # Data prep & feature engineering
+├── step2_train.py        # Mission-specific model training
+├── step3_unified_model.py # Cross-mission ensemble stack
+├── step4_retrain.py      # Dynamic retraining handler
+└── step5_explain_discovery.py # SHAP & candidate discovery
+```
+
+---
+
+## 🎥 Demo & Presentation
+
+- 🌐 **Demo Video:** [*Add YouTube or NASA submission link*]  
+- 🎤 **Presentation Slides:** [*Add Google Slides or PDF link*]
+
+---
+
+## 💡 Future Enhancements
+
+- Integrate **raw light curve ingestion** with automated folding  
+- Deploy on **NASA's Exoplanet Archive sandbox** for public use  
+- Add **Spectral classification** and **TESS FFI auto-curation**  
+- Incorporate **reinforcement-based retraining** for live discoveries  
+
+---
+
+## 🛰️ Acknowledgments
+
+This project was developed for the **2025 NASA Space Apps Challenge** using publicly available data from:
+
+- **NASA Exoplanet Archive**  
+- **Kepler, K2, and TESS Missions**  
+- **MNRAS (Malik et al., 2022)** and **Electronics (2024)** reference architectures  
+
+---
+
+
+
+
+
+
 
 
