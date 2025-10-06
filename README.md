@@ -141,3 +141,14 @@ Balanced for high recall and low false-positive rate.
 ### Backend (FastAPI)
 ```bash
 uvicorn main:app --reload --host 127.0.0.1 --port 7860
+```
+### Frontend (React + Three.js)
+```bash
+cd nasa-exo-ui
+npm install
+npm run dev
+```
+Then open http://localhost:5173/universe
+
+
+
