@@ -98,7 +98,8 @@ Built with **Three.js + React + WebGL**, the 3D Universe visualizes:
 
 ## 🧬 Model Architecture Diagram
 
-![Model Architecture](https://raw.githubusercontent.com/lalithbhima/bhimasphere/main/docs/architecture.png)
+![Model Architecture](https://github.com/lalithbhima/bhimasphere/blob/main/docs/model_architecture.png)
+
 
 > The model combines **tree ensembles**, **deep learning**, and **stacking** for mission-independent, physics-consistent exoplanet discovery.
 
