@@ -1,16 +1,16 @@
-# 🌌 BhimaSphere: Hunting for Exoplanets with AI
+#  BhimaSphere: Hunting for Exoplanets with AI
 
 **Team Members:**  
-👨‍🚀 Lalithendra Reddy Bhima  
-👩‍🚀 Bhavika Bhima  
+ 1. Lalithendra Reddy Bhima  
+ 2. Bhavika Bhima  
 
 **Challenge Theme:**  
-🪐 *A World Away – Hunting for Exoplanets with AI*  
+ *A World Away – Hunting for Exoplanets with AI*  
 **Event:** NASA Space Apps Challenge 2025  
 
 ---
 
-## 🚀 Overview
+##  Overview
 
 **BhimaSphere** is an AI-powered platform that detects and classifies exoplanets across NASA missions using advanced ensemble and deep learning models.  
 Our goal is to make exoplanet discovery **faster, more interpretable, and universally accessible** through an interactive 3D Universe that visualizes each planet’s position, probability, and confidence.
@@ -19,7 +19,7 @@ Our goal is to make exoplanet discovery **faster, more interpretable, and univer
 
 ---
 
-## 🧠 Core Idea
+##  Core Idea
 
 BhimaSphere automates the process of identifying exoplanets from NASA’s **Kepler**, **K2**, and **TESS** missions by combining:
 - **Physics-aware feature engineering**
@@ -32,9 +32,9 @@ The system generalizes across missions — enabling planetary candidates, confir
 
 ---
 
-## 🪄 How It Works
+##  How It Works
 
-### 🧩 Step 1 — Data Preparation
+###  Step 1 — Data Preparation
 - **Datasets:**  
   - NASA *Kepler Objects of Interest (KOI)*  
   - NASA *K2 Planets & Candidates*  
@@ -52,7 +52,7 @@ The system generalizes across missions — enabling planetary candidates, confir
 
 ---
 
-### 🧠 Step 2 — AI/ML Pipeline
+###  Step 2 — AI/ML Pipeline
 
 | Stage | Component | Purpose |
 |:------|:-----------|:--------|
@@ -62,18 +62,18 @@ The system generalizes across missions — enabling planetary candidates, confir
 | **Sequential Model** | CNN + BiLSTM | Detects transit dips & periodicity in brightness |
 | **Meta-Stacker** | Logistic Regression | Blends neural + ensemble outputs for calibrated results |
 
-➡️ **Classification:**  
+ **Classification:**  
 `Confirmed`, `Candidate`, `False Positive`
 
-➡️ **Calibration:**  
+ **Calibration:**  
 Temperature scaling → trustworthy probability estimates  
 
-➡️ **Explainability:**  
+ **Explainability:**  
 Global + local SHAP values visualize which physics features influenced each detection.
 
 ---
 
-### 🌍 Step 3 — Interactive 3D Universe
+###  Step 3 — Interactive 3D Universe
 
 Built with **Three.js + React + WebGL**, the 3D Universe visualizes:
 - Every detected planet (RA, Dec, Distance)
@@ -84,8 +84,8 @@ Built with **Three.js + React + WebGL**, the 3D Universe visualizes:
   - SHAP metrics & calibration scores  
 
 **Modes:**
-- 🧑‍🚀 *Novice Mode* – guided exploration with explanations  
-- 🧪 *Researcher Mode* – upload CSVs, retrain models, explore live calibration  
+-  *Novice Mode* – guided exploration with explanations  
+-  *Researcher Mode* – upload CSVs, retrain models, explore live calibration  
 
 **Features:**
 - Dynamic retraining (Steps 1–5 pipeline)  
@@ -96,7 +96,7 @@ Built with **Three.js + React + WebGL**, the 3D Universe visualizes:
 
 ---
 
-## 🧬 Model Architecture Diagram
+##  Model Architecture Diagram
 
 ![Model Architecture](https://github.com/lalithbhima/bhimasphere/blob/main/docs/model_architecture.png)
 
@@ -105,7 +105,7 @@ Built with **Three.js + React + WebGL**, the 3D Universe visualizes:
 
 ---
 
-## 🔬 Physics Integration
+##  Physics Integration
 
 Every stage of BhimaSphere integrates real astrophysical principles:
 
@@ -123,7 +123,7 @@ These are automatically **normalized, scaled, and embedded** into the model for 
 
 ---
 
-## 📊 Results
+##  Results
 
 | Metric | Holdout | ROC-AUC | PR-AUC |
 |:-------|:--------|:--------|:--------|
@@ -137,7 +137,7 @@ Balanced for high recall and low false-positive rate.
 
 ---
 
-## 🖥️ Running BhimaSphere
+##  Running BhimaSphere
 
 ### Backend (FastAPI)
 ```bash
@@ -153,7 +153,7 @@ Then open http://localhost:5173/universe
 
 ---
 
-## 🧩 Folder Structure
+##  Folder Structure
 
 ```bash
 NASA/
@@ -174,14 +174,14 @@ NASA/
 
 ---
 
-## 🎥 Demo & Presentation
+##  Demo & Presentation
 
-- 🌐 **Demo Video:** [Watch on YouTube](https://youtu.be/a8_UtA3NojI)  
-- 🎤 **Presentation Slides:** [*Add Google Slides or PDF link*]
+-  **Demo Video:** [Watch on YouTube](https://youtu.be/a8_UtA3NojI)  
+-  **Presentation Slides:** [*Add Google Slides or PDF link*]
 
 ---
 
-## 💡 Future Enhancements
+##  Future Enhancements
 
 - Integrate **raw light curve ingestion** with automated folding  
 - Deploy on **NASA's Exoplanet Archive sandbox** for public use  
@@ -190,7 +190,7 @@ NASA/
 
 ---
 
-## 🛰️ Acknowledgments
+##  Acknowledgments
 
 This project was developed for the **2025 NASA Space Apps Challenge** using publicly available data from:
 
