@@ -176,7 +176,7 @@ NASA/
 
 ## 🎥 Demo & Presentation
 
-- 🌐 **Demo Video:** [*Add YouTube or NASA submission link*]  
+- 🌐 **Demo Video:** [Watch on YouTube](https://youtu.be/a8_UtA3NojI)  
 - 🎤 **Presentation Slides:** [*Add Google Slides or PDF link*]
 
 ---
