@@ -207,13 +207,93 @@ export default function Universe3D() {
   // ---------- Load static exoplanets.js ----------
   useEffect(() => {
     setError(null);
-    // filter rows with valid RA/Dec
-    const good = exoplanets.filter(
-      (r) => Number.isFinite(r.ra_deg) && Number.isFinite(r.dec_deg)
-    );
-    console.log("Loaded exoplanets.js:", good.length, "rows");
-    setRows(good);
-  }, []);
+    let data: UniverseRow[] = [];
+
+    try {
+      if (source === "exounified") {
+        data = exoplanets;
+      } else if (source === "candidates") {
+        // Combine K2 + TESS candidate data
+        const combined = k2Data.concat(tessData);
+        console.log("Candidate count:", combined.length);
+
+        // Identify candidate entries by disposition field
+        const candidates = combined.filter((r: any) => {
+          const disp = (r.disposition || r.tfopwg_disp || "").toLowerCase();
+          return disp.includes("candidate") || disp.includes("pc") || disp.includes("apc");
+        });
+
+        console.log("Filtered candidate rows:", candidates.length);
+
+        // Normalize fields for rendering
+        const mapped = candidates.map((r: any) => {
+          // robust distance fallback
+          const dist =
+            r.dist_pc ??
+            r.st_dist ??
+            r.sy_dist ??
+            r.st_dist_pc ??
+            r.sy_dist_pc ??
+            r.distance_pc ??
+            100; // fallback default if missing
+
+          // choose mission label
+          const mission =
+            r.k2_name || r.disp_refname?.toLowerCase().includes("k2")
+              ? "K2"
+              : "TESS";
+
+          return {
+            ...r,
+            mission,
+            pred_text: "Candidate",
+            label: "Candidate",
+            ra_deg: r.ra_deg ?? r.ra ?? r.koi_ra ?? 0,
+            dec_deg: r.dec_deg ?? r.dec ?? r.koi_dec ?? 0,
+            dist_pc: Number.isFinite(dist) ? dist : 100,
+            period: r.pl_orbper ?? r.koi_period ?? null,
+            rade_Re: r.pl_rade ?? r.koi_prad ?? null,
+            p_exoplanet: r.p_exoplanet ?? 0.0,
+          };
+        });
+
+        // keep only valid coordinates
+        const valid = mapped.filter(
+          (r: any) => Number.isFinite(r.ra_deg) && Number.isFinite(r.dec_deg)
+        );
+
+        console.log(
+          `Loaded ${valid.length} rows from source: candidates`,
+          valid.slice(0, 5).map((v: any) => ({
+            ra: v.ra_deg,
+            dec: v.dec_deg,
+            dist: v.dist_pc,
+          }))
+        );
+
+        // prevent double effect run
+        let isMounted = true;
+        if (isMounted) setRows(valid.slice(0, limit));
+        return () => {
+          isMounted = false;
+        };
+      }else if (source === "auto") {
+        // Auto = merge everything
+        data = [...exoplanets, ...k2Data, ...tessData];
+      }
+
+      const valid = data.filter(
+        (r: any) => Number.isFinite(r.ra_deg) && Number.isFinite(r.dec_deg)
+      );
+
+      console.log(`Loaded ${valid.length} rows from source: ${source}`);
+      setRows(valid);
+    } catch (err: any) {
+      console.error("Error loading data:", err);
+      setError(`Failed to load data for source ${source}`);
+    }
+  }, [source, limit]);
+
 
   useEffect(() => {
     fetchMetrics();
@@ -396,7 +476,7 @@ export default function Universe3D() {
     const tmpC = new THREE.Color();
 
     // Scale factor: shrink parsecs to fit inside view
-    const DIST_SCALE = 15.0; // adjust this up/down to make scene fit
+    const DIST_SCALE = 25.0; // adjust this up/down to make scene fit
 
     for (let i = 0; i < N; i++) {
       const r = filtered[i];
@@ -404,8 +484,12 @@ export default function Universe3D() {
       // RA/Dec → direction unit vector
       const dir = radecToUnit(r.ra_deg, r.dec_deg);
 
-      // Use real Gaia distance (scaled down)
-      const R = (r.dist_pc ?? 0) * DIST_SCALE;
+      // Distance fallback for all missions
+      const R =
+        Number.isFinite(r.dist_pc) && r.dist_pc > 0
+          ? r.dist_pc * DIST_SCALE
+          : (Math.random() * 200 + 50) * DIST_SCALE; // pseudo distance (50–250 pc)
+
 
       // Final Cartesian position
       const pos = dir.multiplyScalar(R);
