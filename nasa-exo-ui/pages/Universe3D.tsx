@@ -43,7 +43,7 @@ type ReleaseResponse = {
 
 // ---------- Config ----------
 const API_BASE = "http://127.0.0.1:7860";
-const DEFAULT_LIMIT = 5000;
+const DEFAULT_LIMIT = 60000;
 
 // Mission colors (friendly, high-contrast)
 const MISSION_COLORS: Record<string, number> = {
@@ -217,7 +217,6 @@ export default function Universe3D() {
         const combined = k2Data.concat(tessData);
         console.log("Candidate count:", combined.length);
 
-        // Identify candidate entries by disposition field
         const candidates = combined.filter((r: any) => {
           const disp = (r.disposition || r.tfopwg_disp || "").toLowerCase();
           return disp.includes("candidate") || disp.includes("pc") || disp.includes("apc");
@@ -225,9 +224,7 @@ export default function Universe3D() {
 
         console.log("Filtered candidate rows:", candidates.length);
 
-        // Normalize fields for rendering
         const mapped = candidates.map((r: any) => {
-          // robust distance fallback
           const dist =
             r.dist_pc ??
             r.st_dist ??
@@ -235,9 +232,8 @@ export default function Universe3D() {
             r.st_dist_pc ??
             r.sy_dist_pc ??
             r.distance_pc ??
-            100; // fallback default if missing
+            100;
 
-          // choose mission label
           const mission =
             r.k2_name || r.disp_refname?.toLowerCase().includes("k2")
               ? "K2"
@@ -257,42 +253,34 @@ export default function Universe3D() {
           };
         });
 
-        // keep only valid coordinates
-        const valid = mapped.filter(
+        data = mapped.filter(
           (r: any) => Number.isFinite(r.ra_deg) && Number.isFinite(r.dec_deg)
         );
 
-        console.log(
-          `Loaded ${valid.length} rows from source: candidates`,
-          valid.slice(0, 5).map((v: any) => ({
-            ra: v.ra_deg,
-            dec: v.dec_deg,
-            dist: v.dist_pc,
-          }))
-        );
-
-        // prevent double effect run
-        let isMounted = true;
-        if (isMounted) setRows(valid.slice(0, limit));
-        return () => {
-          isMounted = false;
-        };
-      }else if (source === "auto") {
-        // Auto = merge everything
+      } else if (source === "auto") {
+        // Merge everything
         data = [...exoplanets, ...k2Data, ...tessData];
       }
 
+      // Universal valid check
       const valid = data.filter(
         (r: any) => Number.isFinite(r.ra_deg) && Number.isFinite(r.dec_deg)
       );
 
       console.log(`Loaded ${valid.length} rows from source: ${source}`);
-      setRows(valid);
+
+      // ✅ Apply limit globally
+      const limited = valid.slice(0, limit);
+      setRows(limited);
+
+      console.log(`Displayed ${limited.length} (of ${valid.length}) rows after applying limit=${limit}`);
+
     } catch (err: any) {
       console.error("Error loading data:", err);
       setError(`Failed to load data for source ${source}`);
     }
   }, [source, limit]);
+
 
 
   useEffect(() => {
@@ -353,7 +341,10 @@ export default function Universe3D() {
     camera.position.set(0, 0, 800);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true, // important!
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     mountRef.current.appendChild(renderer.domElement);
@@ -649,32 +640,25 @@ export default function Universe3D() {
 
   // ---------- Actions ----------
   const resetView = () => {
-    if (!controlsRef.current || !cameraRef.current || !cloudRef.current) return;
-
-    // Compute bounding box of the current instanced mesh
-    const box = new THREE.Box3().setFromObject(cloudRef.current);
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-
-    // Move camera behind the cloud, looking at the center
-    controlsRef.current.target.copy(center);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const maxDim = Math.max(size.x, size.y, size.z);
-
-    cameraRef.current.position.set(center.x, center.y, center.z + maxDim * 1.5);
-    controlsRef.current.update();
-    controlsRef.current.update();
+    // Fully reloads the page and restores the initial default scene
+    window.location.reload();
   };
 
   const screenshot = () => {
     const r = rendererRef.current;
     if (!r) return;
-    const url = r.domElement.toDataURL("image/png");
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "universe.png";
-    a.click();
+
+    try {
+      const url = r.domElement.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "universe.png";
+      a.click();
+      console.log("✅ Screenshot saved successfully");
+    } catch (err) {
+      console.error("Screenshot failed:", err);
+      alert("⚠️ Screenshot not supported. Try enabling preserveDrawingBuffer in WebGLRenderer.");
+    }
   };
 
   const exportCSV = () => {
