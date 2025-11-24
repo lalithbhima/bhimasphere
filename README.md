@@ -177,7 +177,7 @@ NASA/
 ##  Demo & Presentation
 
 -  **Demo Video:** [Watch on YouTube](https://youtu.be/a8_UtA3NojI)  
--  **Presentation Slides:** [*Add Google Slides or PDF link*]
+-  **Presentation Slides:** https://www.canva.com/design/DAG02SIRMBg/YxXyYPrEOYJq-cmJbcq2_Q/view
 
 ---
 
